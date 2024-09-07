@@ -1,7 +1,6 @@
-import numpy as np
 import os
-from pprint import pprint
 import time
+import numpy as np
 from util import print_board, get_puzzles
 
 
@@ -49,22 +48,21 @@ def build_graph(board, pos):
     return graph
 
 
-def is_safe(board, row, col):
-    key = board[row][col]
+def is_safe(board, row, col, key):
 
-    for i in range(9):
-        if i != col and board[row][i] == key:
-            return False
-        if i != row and board[i][col] == key:
-            return False
+    if key in board[row, :]:
+        return False
+
+    if key in board[:, col]:
+        return False
 
     r_start, c_start = 3 * (row // 3), 3 * (col // 3)
     r_end, c_end = r_start + 3, c_start + 3
 
-    for i in range(r_start, r_end):
-        for j in range(c_start, c_end):
-            if i != row and j != col and board[i][j] == key:
-                return False
+    subboard = board[r_start:r_end, c_start:c_end]
+
+    if key in subboard:
+        return False
 
     return True
 
@@ -73,9 +71,8 @@ def solve(board, graph, keys, k, rows, r):
     for c in graph[keys[k]][rows[r]]:
         if board[rows[r]][c] > 0:
             continue
-        board[rows[r]][c] = keys[k]
-        if is_safe(board, rows[r], c):
-            print(board[rows[r]][c])
+        if is_safe(board, rows[r], c, keys[k]):
+            board[rows[r]][c] = keys[k]
             if r < len(rows) - 1:
                 if solve(board, graph, keys, k, rows, r + 1):
                     return True
@@ -95,14 +92,14 @@ def solve(board, graph, keys, k, rows, r):
 
 
 def main():
-    # files = get_puzzles()
-    files = [os.path.join('puzzles', 'hard_175')]
-    hardest_puzzles = []
+    files = get_puzzles()
+
+    total_time = time.time()
 
     for file in files:
-        print(file)
+        # print(file[8:])
         board = np.loadtxt(file, dtype=int)
-        start = time.time()
+        # start = time.time()
         pos, rem = build_pos_and_rem(board)
         graph = build_graph(board, pos)
 
@@ -110,12 +107,11 @@ def main():
         rows = list(graph[keys[0]].keys())
 
         solve(board, graph, keys, 0, rows, 0)
-        finish = time.time() - start
-        print(f'Time: {round(finish, 6)}')
-        if finish > 1:
-            hardest_puzzles.append(file)
+        # finish = time.time() - start
+        # print(f'Time: {round(finish, 6)}')
 
-    print(hardest_puzzles)
+    finish_time = time.time() - total_time
+    print(finish_time)
 
 
 if __name__ == "__main__":

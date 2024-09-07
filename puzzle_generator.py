@@ -73,7 +73,7 @@ def remove_values(board, missing):
 
 
 def main():
-    for _ in range(1000):
+    for _ in range(100):
 
         missing = random.randint(30, 73)
         board = generate_board()
